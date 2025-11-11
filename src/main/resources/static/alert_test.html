@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>SmartShield Alerts</title>
+</head>
+<body>
+<h2>🚨 실시간 위험 알림 스트림</h2>
+<div id="alerts"></div>
+
+<script>
+    const es = new EventSource("http://localhost:8080/api/alerts/stream");
+
+    es.addEventListener("alert", (event) => {
+        const data = JSON.parse(event.data);
+        const div = document.getElementById("alerts");
+        const msg = document.createElement("p");
+        msg.textContent = `[${data.danger_level}] ${data.detected_class} (${data.camera_id})`;
+        div.prepend(msg);
+    });
+
+    es.onerror = (err) => {
+        console.error("SSE 연결 에러:", err);
+    };
+</script>
+</body>
+</html>
