@@ -11,7 +11,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: create # create 와 update 선택 사용 create : 실행할 때 엔티티 삭제 후 생성, update : 변경내용만 업데이트(칼럼 삭제 적용 안됨)
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
@@ -23,7 +23,7 @@ cloud:
     region:
       static: ${AWS_REGION:ap-northeast-2}
     s3:
-      bucket: ${S3_BUCKET:smartshield-detections-dev}
+      bucket: ${S3_BUCKET:smartshield-detection-dev}
     credentials:
       access-key: ${AWS_ACCESS_KEY_ID}
       secret-key: ${AWS_SECRET_ACCESS_KEY}
@@ -32,7 +32,12 @@ app:
   cors:
     allowed-origins: "*"
 
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: ${JWT_ACCESS_EXPIRATION}
+  refresh-token-expiration: ${JWT_REFRESH_EXPIRATION}
+
 logging:
   level:
     root: INFO
-    sanhak.smartshield: DEBUG  # 우리 패키지만 디버그 유지
+    sanhak.smartshield: DEBUG

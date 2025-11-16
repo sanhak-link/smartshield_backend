@@ -19,13 +19,11 @@ public class AlertController {
         return alertService.subscribe();
     }
 
-    // 🔸 main.jsx가 초기 동기화에서 호출하는 API
     @GetMapping("/active")
     public Map<String, Object> active() {
         return Map.of("active", alertService.isActive());
     }
 
-    // 🔸 데모/테스트용 해제 API(원하면 버튼과 연결)
     @PostMapping("/resolve")
     public Map<String, Object> resolve() {
         alertService.signalResolved();

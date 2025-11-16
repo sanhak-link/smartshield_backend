@@ -1,46 +1,64 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.7'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.3.4'   
+    id 'io.spring.dependency-management' version '1.1.6'
 }
 
 group = 'sanhak'
 version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
+    sourceCompatibility = '17'
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.mysql:mysql-connector-j'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // 웹, 타임리프
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    
+    // DB, JPA
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
-	implementation 'software.amazon.awssdk:s3:2.25.30'	//S3관련 AWS SDK
-	implementation 'software.amazon.awssdk:auth:2.25.30'
-	implementation 'software.amazon.awssdk:regions:2.25.30'
+    // 시큐리티, 유효성 검사
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-	implementation 'io.github.cdimascio:dotenv-java:3.0.0' // .env 로더
+    // AWS S3
+    implementation 'software.amazon.awssdk:s3:2.25.30'
+    implementation 'software.amazon.awssdk:auth:2.25.30'
+    implementation 'software.amazon.awssdk:regions:2.25.30'
+
+    // .env 로더
+    implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+
+    // JWT
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
+
+
+    // 롬복 (Lombok) - 에러의 주범
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+// 한글 깨짐 방지
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
