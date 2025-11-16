@@ -85,23 +85,31 @@ public class JwtTokenProvider {
      * JWT 토큰 유효성 검증
      */
     public boolean validateToken(String token) {
-        try {
-            Jwts.parser()
+    try {
+        if (token == null || token.trim().isEmpty()) {
+            return false;  // JWT 없음 → 정상적으로 false 리턴
+        }
+
+        Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token);
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            log.error("Invalid JWT signature: {}", e.getMessage());
-        } catch (ExpiredJwtException e) {
-            log.error("Expired JWT token: {}", e.getMessage());
-        } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT token: {}", e.getMessage());
-        } catch (IllegalArgumentException e) {
-            log.error("JWT claims string is empty: {}", e.getMessage());
-        }
-        return false;
+
+        return true;
+
+    } catch (SecurityException | MalformedJwtException e) {
+        log.error("Invalid JWT signature: {}", e.getMessage());
+    } catch (ExpiredJwtException e) {
+        log.error("Expired JWT token: {}", e.getMessage());
+    } catch (UnsupportedJwtException e) {
+        log.error("Unsupported JWT token: {}", e.getMessage());
+    } catch (IllegalArgumentException e) {
+        log.error("JWT claims string is empty: {}", e.getMessage());
     }
+
+    return false;
+}
+
     
     /**
      * JWT 토큰 타입 확인 (access/refresh)

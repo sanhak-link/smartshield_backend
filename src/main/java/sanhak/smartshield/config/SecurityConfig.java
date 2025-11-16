@@ -34,8 +34,14 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final CustomUserDetailsService customUserDetailsService;
 
+    private static final String[] SSE_WHITELIST = {
+            "/api/alerts/stream",
+            "/api/alerts/active"
+    };
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -43,19 +49,21 @@ public class SecurityConfig {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/alerts/**", "/error").permitAll()
+                        // SSE / alerts 전체 허용
+                        .requestMatchers(SSE_WHITELIST).permitAll()
+                        .requestMatchers("/api/alerts/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/error").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 
-                .authenticationProvider(authenticationProvider())
+                // ⚠ JWT 인증 필터에서 SSE URL은 제외하도록 커스텀
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
         return http.build();
     }
 
-    // AuthenticationManager는 Spring이 자동으로 구성 -> config.getAuthenticationManager() 사용
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -64,7 +72,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(customUserDetailsService); // 오직 CustomUserDetailsService 사용
+        provider.setUserDetailsService(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }

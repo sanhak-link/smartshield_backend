@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -26,12 +26,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
 
-    // ✅ 인증이 필요 없는 URI 목록
-    private static final List<String> EXCLUDED_PATHS = List.of(
+    // 🔥 정확하게 허용해야 하는 URI만 지정
+    private static final Set<String> EXCLUDED_PATHS = Set.of(
             "/api/auth/login",
             "/api/auth/signup",
             "/api/auth/refresh",
-            "/h2-console",
+            "/api/alerts/stream",
+            "/api/alerts/active",
             "/error"
     );
 
@@ -44,8 +45,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        // ✅ 로그인·회원가입 등은 JWT 검증 안 함
-        if (EXCLUDED_PATHS.stream().anyMatch(uri::startsWith)) {
+        // 🔥 JWT 검사 제외 (정확히 매칭되는 경로만)
+        if (EXCLUDED_PATHS.contains(uri)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -53,7 +54,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+            // 🔥 JWT 없으면 인증 시도 안 하고 바로 다음 필터로 보냄
+            if (!StringUtils.hasText(jwt)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // 🔥 JWT 유효하면 인증 세션 생성
+            if (tokenProvider.validateToken(jwt)) {
+
                 String tokenType = tokenProvider.getTokenType(jwt);
 
                 if ("access".equals(tokenType)) {
@@ -71,12 +80,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
+
         } catch (Exception ex) {
             log.error("❌ JWT 인증 중 오류 발생: {}", ex.getMessage(), ex);
         }
 
         filterChain.doFilter(request, response);
     }
+
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
