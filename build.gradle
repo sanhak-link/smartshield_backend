@@ -21,6 +21,11 @@ repositories {
     mavenCentral()
 }
 
+// 한글 깨짐 방지
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
 dependencies {
     // 웹, 타임리프
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -51,6 +56,8 @@ dependencies {
     // 롬복 (Lombok) - 에러의 주범
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter-mail' // email-send
+
 
 }
 
@@ -58,7 +65,3 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-// 한글 깨짐 방지
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
