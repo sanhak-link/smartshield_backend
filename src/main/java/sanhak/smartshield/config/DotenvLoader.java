@@ -5,9 +5,7 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.ConfigurableEnvironment;
 
-/**
- * 스프링 부트 시작 전에 .env를 환경변수로 등록하는 초기화 클래스
- */
+
 public class DotenvLoader implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     @Override

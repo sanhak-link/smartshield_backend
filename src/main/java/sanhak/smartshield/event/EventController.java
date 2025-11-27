@@ -2,11 +2,12 @@ package sanhak.smartshield.event;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import sanhak.smartshield.alert.AlertService;
-import sanhak.smartshield.event.dto.EventCompleteRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
+import sanhak.smartshield.alert.AlertService;
+import sanhak.smartshield.event.dto.EventCompleteRequest;
+import sanhak.smartshield.report.GeminiReportService;
+import sanhak.smartshield.report.IncidentReport;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ public class EventController {
 
     private final EventLogRepository repo;
     private final AlertService alertService;
+    private final GeminiReportService geminiReportService;
     private final ObjectMapper om = new ObjectMapper();
 
     @PostMapping("/complete")
@@ -37,21 +39,11 @@ public class EventController {
                 .build();
         repo.save(log);
 
+        // Gemini 출동 경위서 자동 생성
+        IncidentReport report = geminiReportService.generateIncidentReport(log);
+        System.out.println("📝 [REPORT] incident_report 생성 완료 id=" + report.getId());
+
         // 실시간 알림 push (프론트는 /api/alerts/stream 구독)
-        alertService.broadcast(Map.of(
-                "event_id", req.getEvent_id(),
-                "camera_id", req.getCamera_id(),
-                "detected_class", req.getDetected_class(),
-                "danger_level", req.getDanger_level(),
-                "video_url", req.getFile_url()
-        ));
-
-        // 🔸 main.jsx 호환: ON 신호 추가
-        alertService.signalCreated();
-
-        // 로그 내역?
-        System.out.println("✅ [EVENT] saved: eventId=" + req.getEvent_id() + ", level=" + req.getDanger_level());
-
         Map<String, Object> payload = Map.of(
                 "event_id", req.getEvent_id(),
                 "camera_id", req.getCamera_id(),
@@ -61,7 +53,16 @@ public class EventController {
         );
         alertService.broadcast(payload);
 
-        return Map.of("status", "ok", "id", log.getId());
+        // main.jsx 호환: ON 신호 추가
+        alertService.signalCreated();
+
+        System.out.println("✅ [EVENT] saved: eventId=" + req.getEvent_id() + ", level=" + req.getDanger_level());
+
+        return Map.of(
+                "status", "ok",
+                "id", log.getId(),
+                "reportId", report.getId()      // 프론트에서 필요하면 사용
+        );
     }
 
     @GetMapping("/list")

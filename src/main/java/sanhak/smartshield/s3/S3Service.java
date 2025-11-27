@@ -21,7 +21,7 @@ public class S3Service {
     private final S3Presigner presigner;
 
     public S3Service() {
-        // .env -> DotenvLoader 가 System properties 로 주입해둔 값 사용
+        // 이 부분 문제 생기면 액세스 키 확인해야됨(.env 파일 확인)
         String accessKey = System.getProperty("AWS_ACCESS_KEY_ID");
         String secretKey = System.getProperty("AWS_SECRET_ACCESS_KEY");
         this.region      = System.getProperty("AWS_REGION", "ap-northeast-2");
@@ -49,7 +49,7 @@ public class S3Service {
         PresignedPutObjectRequest presigned = presigner.presignPutObject(preq);
         URL uploadUrl = presigned.url();
 
-        // 참고용(버킷 private이면 직접 열리진 않을 수 있음)
+        // 버킷 private이면 직접 열리진 않으니까 참고
         String fileUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key);
 
         return Map.of(

@@ -19,7 +19,7 @@ public class S3Controller {
         if (key == null || key.isBlank()) {
             throw new IllegalArgumentException("fileName is required");
         }
-        // 유효시간 3분 (필요시 조정)
+        // 유효시간 3분
         return s3Service.presignPut(key, 3);
     }
 }

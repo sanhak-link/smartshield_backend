@@ -33,7 +33,7 @@ public class EventCompleteRequest {
     private void setFileUrlAlias(String v) { this.file_url = v; }
 
     @JsonProperty("s3_key")
-    private String s3_key; // 옵션
+    private String s3_key;
 
     private Map<String, Object> meta;
 }

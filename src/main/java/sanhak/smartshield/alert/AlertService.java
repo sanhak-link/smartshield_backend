@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class AlertService {
     private final List<SseEmitter> clients = new CopyOnWriteArrayList<>();
 
-    // 🔸 main.jsx 호환을 위한 “현재 활성 알림 여부”
     private final AtomicBoolean active = new AtomicBoolean(false);
 
     public SseEmitter subscribe() {
@@ -21,7 +20,6 @@ public class AlertService {
         clients.add(e);
         System.out.println("👥 [SSE] subscribers=" + clients.size());
 
-        // 선택) 연결 직후 하트비트 한 번
         try { e.send(SseEmitter.event().comment("connected")); } catch (Exception ignore) {}
 
         e.onCompletion(() -> {

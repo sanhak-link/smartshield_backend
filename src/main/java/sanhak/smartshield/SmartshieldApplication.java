@@ -7,7 +7,7 @@ import sanhak.smartshield.config.DotenvLoader;
 
 @SpringBootApplication
 public class SmartshieldApplication {
-
+	// s3
 	public static void main(String[] args) {
 		new SpringApplicationBuilder(SmartshieldApplication.class)
 				.initializers(new DotenvLoader()) // 가장 먼저 실행됨
